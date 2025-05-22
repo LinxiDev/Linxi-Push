@@ -1,4 +1,4 @@
-# 脚本活动: 故事答题(健康故事)
+# 脚本活动: 故事答题(启沃健康)
 # 活动地址: ✅今日学习入口：http://s.fex7g.cn/?t=RQZBy1zV
 
 import os
@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 脚本版本
 version = "1.0.0"
-name = "故事答题(健康故事)"
+name = "故事答题(启沃健康)"
 lin_token = "jkgstoken"
 lin_tips = '{"uid":"xxxxxxxx","sKey":"xxxxxxxx","ctId":"xxxxxx"}'
 # 默认线程数
