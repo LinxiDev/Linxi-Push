@@ -15,7 +15,7 @@ lin_tips = '{"uid":"xxxxxxxx","sKey":"xxxxxxxx","ctId":"xxxxxx"}'
 # 默认线程数
 max_workers = 8
 # 变量类型(本地/青龙)
-Btype = "本地"
+Btype = "青龙"
 # 域名(无法使用时请更换)
 domain = 'https://api.qingkeguanli.com/frontend/web/index.php?r=term-course'
 # 缓存地址
