@@ -3,8 +3,9 @@
 
 import os
 import json
-import threading
 import time
+import signal
+import threading
 import requests
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -32,7 +33,13 @@ headers = {
 # 全局日志容器（线程安全）
 logs_by_account = {}
 # 线程锁，防止多线程写冲突
-log_lock = threading.Lock()  
+log_lock = threading.Lock() 
+# 信号处理器
+def exit_gracefully(signum, frame):
+    print("[强制结束] ⚠️ 正在强制终止所有线程...")
+    os._exit(0) 
+signal.signal(signal.SIGINT, exit_gracefully)
+signal.signal(signal.SIGTERM, exit_gracefully)
 
 def userinfo(i, ck):
     # 获取用户信息
@@ -58,6 +65,10 @@ def withdrawal(i, ck):
         result = ss.get("https://widget-v3.seniverse.com/api/weather/4d55fc27-e045-4b12-a330-44b2d98f60ef?unit=c&language=zh-Hans&location=WX4FBXXFKE4F&geolocation=false&detected=zh-cn",headers=headers).json()
         log(i,f"账号【{i+1}】✅ 天气: {result['results'][0]['data'][0]['location']}")
         log(i,f"账号【{i+1}】✅ 执行提现操作")
+        for i in range(10):
+            result = ss.get("https://widget-v3.seniverse.com/api/weather/4d55fc27-e045-4b12-a330-44b2d98f60ef?unit=c&language=zh-Hans&location=WX4FBXXFKE4F&geolocation=false&detected=zh-cn",headers=headers).json()
+            log(i,f"账号【{i+1}】✅ 天气: {result['results'][0]['data'][0]['location']}")
+            log(i,f"账号【{i+1}】✅ 执行提现操作")
     except Exception as e:
         log(i,f"账号【{i+1}】⚠️ 执行提现操作失败: {e}")
 

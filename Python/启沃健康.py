@@ -3,6 +3,9 @@
 
 import os
 import json
+import time
+import signal
+import threading
 import requests
 import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -27,6 +30,16 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 MicroMessenger/8.0.39 (0x18002733) NetType/WIFI Language/zh_CN',
     'Content-Type': 'application/x-www-form-urlencoded'
 }
+# 全局日志容器（线程安全）
+logs_by_account = {}
+# 线程锁，防止多线程写冲突
+log_lock = threading.Lock() 
+# 信号处理器
+def exit_gracefully(signum, frame):
+    print("[强制结束] ⚠️ 正在强制终止所有线程...")
+    os._exit(0) 
+signal.signal(signal.SIGINT, exit_gracefully)
+signal.signal(signal.SIGTERM, exit_gracefully)
 
 def getid(uid):
     result = ss.get(f"{turl}/getdata?key={uid}").json()
@@ -49,7 +62,7 @@ def setid(uid,id):
 def scanid(ck):
     acid = int(getid(ck['uid']))
     if not acid:
-        acid  = 0
+        acid  = 3000
     for actid in range(acid,99999):
         result = ss.get(f"{domain}/enter&userId={ck['uid']}&sessionKey={ck['sKey']}&courseId={actid}&consultantId={ck['ctId']}&corpId=", headers=headers).json()
         if result["code"] == 0:
@@ -94,6 +107,12 @@ def handle_exception(e, i):
     info = traceback.format_exc()
     print(f"账号【{i+1}】⚠️ 程序出现异常: {e} 详细信息:{info}")
 
+def log(i, message):
+    with log_lock:
+        if i not in logs_by_account:
+            logs_by_account[i] = []
+        logs_by_account[i].append(message)
+
 if __name__ == "__main__":
     print(f"""██╗     ██╗███╗   ██╗           ██╗██╗  ██╗ ██████╗ ███████╗
 ██║     ██║████╗  ██║           ██║██║ ██╔╝██╔════╝ ██╔════╝
@@ -122,7 +141,7 @@ if __name__ == "__main__":
         for i, ck in enumerate(ck_token):
             futures.append(executor.submit(get_user_info, i, ck))
 
-        print("================👻开始获取数据👻===============")
+        print("================👻开始执行任务👻===============")
         for future in as_completed(futures):
             try:
                 future.result()
